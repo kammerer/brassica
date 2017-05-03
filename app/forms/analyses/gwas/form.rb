@@ -7,6 +7,7 @@ module Analyses
 
       property :analysis_type
       property :name
+      property :plant_trial_id
       property :genotype_data_file_id
       property :map_data_file_id
       property :phenotype_data_file_id
@@ -15,10 +16,33 @@ module Analyses
       validates :genotype_data_file, presence: true
       validates :phenotype_data_file, presence: true
 
-      validate do
+      validate :check_data
+
+      def plant_trial_based?
+        plant_trial_id.present?
+      end
+
+      def genotype_data_file
+        data_file = Analysis::DataFile.gwas_genotype.find_by(id: genotype_data_file_id)
+        AnalysisDataFileDecorator.decorate(data_file) if data_file
+      end
+
+      def map_data_file
+        data_file = Analysis::DataFile.gwas_map.find_by(id: map_data_file_id)
+        AnalysisDataFileDecorator.decorate(data_file) if data_file
+      end
+
+      def phenotype_data_file
+        data_file = Analysis::DataFile.gwas_phenotype.find_by(id: phenotype_data_file_id)
+        AnalysisDataFileDecorator.decorate(data_file) if data_file
+      end
+
+      private
+
+      def check_upload_based_analysis
         geno = parse_data_file(genotype_data_file, genotype_data_parser)
         map = parse_data_file(map_data_file, map_data_parser)
-        pheno = parse_data_file(phenotype_data_file, phenotype_data_parser)
+        pheno = prepare_pheno_data
 
         if geno && !geno.valid?
           geno.errors.each { |error| errors.add(:genotype_data_file, error) }
@@ -47,27 +71,27 @@ module Analyses
         end
       end
 
-      def genotype_data_file
-        data_file = Analysis::DataFile.gwas_genotype.find_by(id: genotype_data_file_id)
-        AnalysisDataFileDecorator.decorate(data_file) if data_file
-      end
-
-      def map_data_file
-        data_file = Analysis::DataFile.gwas_map.find_by(id: map_data_file_id)
-        AnalysisDataFileDecorator.decorate(data_file) if data_file
-      end
-
-      def phenotype_data_file
-        data_file = Analysis::DataFile.gwas_phenotype.find_by(id: phenotype_data_file_id)
-        AnalysisDataFileDecorator.decorate(data_file) if data_file
-      end
-
-      private
-
       def parse_data_file(data_file, parser)
         return unless data_file
 
         File.open(data_file.file.path, "r") { |file| parser.call(file) }
+      end
+
+      def prepare_pheno_data
+        if plant_trial_based?
+          build_plant_trial_pheno_data
+        else
+          parse_data_file(phenotype_data_file, phenotype_data_parser)
+        end
+      end
+
+      def build_plant_trail_pheno_data
+        documents = Submission::PlantTrialExporter.
+          new(OpenStruct.new(submitted_object: plant_trial, user: plant_trial.user))
+
+        trial_scoring = documents.fetch(:trial_scoring)
+
+
       end
 
       def genotype_data_parser
@@ -85,6 +109,10 @@ module Analyses
 
       def phenotype_data_parser
         Analysis::Gwas::PhenotypeCsvParser.new
+      end
+
+      def plant_trial
+        PlantTrial.available_to(current_user).find(plant_trial_id)
       end
     end
   end
