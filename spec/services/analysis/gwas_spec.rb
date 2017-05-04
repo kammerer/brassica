@@ -9,7 +9,7 @@ RSpec.describe Analysis::Gwas do
   subject { described_class.new(analysis) }
 
   describe "#call" do
-    let(:selected_traits) { analysis.args.fetch("phenos") }
+    let(:selected_traits) { analysis.meta.fetch("phenos") }
     let!(:genotype_data_file) {
       create(:analysis_data_file, :gwas_genotype_csv, analysis: analysis, owner: analysis.owner)
     }

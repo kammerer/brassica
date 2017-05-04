@@ -59,7 +59,7 @@ class Analysis
     end
 
     def selected_traits
-      @selected_traits ||= analysis.args["phenos"]
+      @selected_traits ||= analysis.meta["phenos"]
 
       unless @selected_traits.present?
         File.open(phenotype_data_file.file.path, "r") do |file|
@@ -72,7 +72,7 @@ class Analysis
     end
 
     def mixed_effect_traits
-      @mixed_effect_traits ||= analysis.args["cov"]
+      @mixed_effect_traits ||= analysis.meta["cov"]
     end
 
     def job_command
