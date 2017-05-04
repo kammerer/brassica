@@ -44,8 +44,12 @@ class Analysis
     end
 
     def prepare_plant_trial_phenotype_csv_data_file
-      plant_trial = PlantTrial.find(analysis.args.fetch(:plant_trial_id))
+      plant_trial = PlantTrial.find(analysis.meta.fetch("plant_trial_id"))
       Analysis::Gwas::PlantTrialPhenotypeDataBuilder.new.call(plant_trial)
+    end
+
+    def plant_trial_based?
+      analysis.meta["plant_trial_id"].present?
     end
 
     def runner

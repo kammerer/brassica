@@ -5,6 +5,7 @@ module Analyses
 
       model :analysis
 
+      property :owner
       property :analysis_type
       property :name
       property :plant_trial_id
@@ -12,11 +13,28 @@ module Analyses
       property :map_data_file_id
       property :phenotype_data_file_id
 
-      validates :name, presence: true
+      validates :owner, :name, presence: true
       validates :genotype_data_file, presence: true
       validates :phenotype_data_file, presence: true
 
       validate :check_data
+
+      def save!
+        save do |attrs|
+          # binding.pry
+          attrs = attrs.except(:genotype_data_file_id, :phenotype_data_file_id, :map_data_file_id, :plant_trial_id)
+          attrs[:meta] = { plan_trial_id: plant_trial_id } if plant_trial_based?
+
+          Analysis.transaction do
+            analysis = Analysis.create!(attrs)
+            analysis.data_files << genotype_data_file
+            analysis.data_files << map_data_file if map_data_file
+            analysis.data_files << phenotype_data_file unless plant_trial_based?
+
+            AnalysisJob.new(analysis).enqueue
+          end
+        end
+      end
 
       def plant_trial_based?
         plant_trial_id.present?
@@ -39,7 +57,7 @@ module Analyses
 
       private
 
-      def check_upload_based_analysis
+      def check_data
         geno = parse_data_file(genotype_data_file, genotype_data_parser)
         map = parse_data_file(map_data_file, map_data_parser)
         pheno = prepare_pheno_data
