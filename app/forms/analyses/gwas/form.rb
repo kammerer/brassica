@@ -85,13 +85,8 @@ module Analyses
         end
       end
 
-      def build_plant_trail_pheno_data
-        documents = Submission::PlantTrialExporter.
-          new(OpenStruct.new(submitted_object: plant_trial, user: plant_trial.user))
-
-        trial_scoring = documents.fetch(:trial_scoring)
-
-
+      def build_plant_trial_pheno_data
+        Analysis::Gwas::PlantTrialPhenotypeDataBuilder.new.call(plant_trial)
       end
 
       def genotype_data_parser

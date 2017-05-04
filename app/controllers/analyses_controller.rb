@@ -23,7 +23,7 @@ class AnalysesController < ApplicationController
         analysis = Analysis.create!(attrs)
         analysis.data_files << @form.genotype_data_file
         analysis.data_files << @form.map_data_file if @form.map_data_file
-        analysis.data_files << @form.phenotype_data_file
+        analysis.data_files << @form.phenotype_data_file unless @form.plan_trial_based?
 
         AnalysisJob.new(analysis).enqueue
       end

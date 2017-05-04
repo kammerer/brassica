@@ -17,8 +17,11 @@ class Analysis
     attr_reader :analysis
 
     def prepare_csv_data_files
-      return if genotype_data_file(:csv)
+      prepare_genotype_csv_data_file unless genotype_data_file(:csv)
+      prepare_plant_trial_phenotype_csv_data_file if plant_trial_based?
+    end
 
+    def prepare_genotype_csv_data_file
       vcf_data_file = genotype_data_file
 
       genotype_csv, map_csv = Analysis::Gwas::GenotypeVcfToCsvConverter.new.call(vcf_data_file.file.path)
@@ -38,6 +41,11 @@ class Analysis
         file_content_type: "text/csv",
         owner: analysis.owner
       )
+    end
+
+    def prepare_plant_trial_phenotype_csv_data_file
+      plant_trial = PlantTrial.find(analysis.args.fetch(:plant_trial_id))
+      Analysis::Gwas::PlantTrialPhenotypeDataBuilder.new.call(plant_trial)
     end
 
     def runner
