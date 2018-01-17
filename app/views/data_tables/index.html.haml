@@ -24,24 +24,23 @@
   = see_all_button
 
   = datatable_tag do
-    - model_class = model_param.singularize.camelize.constantize
-    - model_class.table_columns.each do |column|
+    - model_klass.table_columns.each do |column|
       - model_name, column_name = extract_column(column)
       %th{ class: "#{model_name}_#{column_name}_column",
            title: t("tables.#{model_name}.#{column_name}_title", default: ''),
            data: { toggle: 'tooltip', container: 'body' }}
         = t("tables.#{model_name}.#{column_name}")
 
-    - if model_class == Qtl || model_class == MapLocusHit || model_class == TraitDescriptor
+    - if model_klass == Qtl || model_klass == MapLocusHit || model_klass == TraitDescriptor
       %th.related-specific{ data: { orderable: 'false' }}
 
-    - elsif model_class.respond_to?(:counter_names) && model_class.counter_names.present?
-      - count_data_index = model_class.table_columns.size
-      %th.related{ data: { models: model_class.counter_names,
+    - elsif model_klass.respond_to?(:counter_names) && model_klass.counter_names.present?
+      - count_data_index = model_klass.table_columns.size
+      %th.related{ data: { models: model_klass.counter_names,
                            count_data_index: count_data_index,
                            orderable: 'false' }}
 
     - unless params[:group]
       -# per-record actions only make sense in non-grouped tables
-      - if model_class.ancestors.include?(Annotable)
+      - if model_klass.ancestors.include?(Annotable)
         %th.annotations{ data: { orderable: 'false' }}

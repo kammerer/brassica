@@ -1,4 +1,6 @@
 class DataTablesController < ApplicationController
+  helper_method :model_klass
+
   def index
     respond_to do |format|
       format.html do
@@ -41,7 +43,11 @@ class DataTablesController < ApplicationController
   end
 
   def model_klass
-    model_param.singularize.camelize.constantize
+    if model_param == "linkage_maps"
+      DataTable::LinkageMap
+    else
+      model_param.singularize.camelize.constantize
+    end
   end
 
   def allowed_models

@@ -10,7 +10,8 @@
 # you'll amass, the slower it'll run and the greater likelihood for issues).
 #
 # It's strongly recommended that you check this file into your version control system.
-ActiveRecord::Schema.define(version: 20170929085416) do
+
+ActiveRecord::Schema.define(version: 20180117183326) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -972,4 +973,24 @@ ActiveRecord::Schema.define(version: 20170929085416) do
   add_foreign_key "trait_scores", "plant_scoring_units", on_update: :cascade, on_delete: :nullify
   add_foreign_key "trait_scores", "trait_descriptors", on_update: :cascade, on_delete: :nullify
   add_foreign_key "trait_scores", "users", on_update: :cascade, on_delete: :nullify
+
+  create_view "data_table_linkage_maps",  sql_definition: <<-SQL
+      SELECT linkage_maps.id,
+      linkage_maps.user_id,
+      linkage_maps.updated_at,
+      taxonomy_terms.name AS taxonomy_term_name,
+      plant_populations.name AS plant_population_name,
+      linkage_maps.linkage_map_label,
+      linkage_maps.linkage_map_name,
+      linkage_maps.map_version_no,
+      linkage_maps.map_version_date,
+      linkage_maps.linkage_groups_count,
+      linkage_maps.map_locus_hits_count,
+      linkage_maps.plant_population_id,
+      linkage_maps.pubmed_id
+     FROM ((linkage_maps
+       LEFT JOIN plant_populations ON ((plant_populations.id = linkage_maps.plant_population_id)))
+       LEFT JOIN taxonomy_terms ON ((taxonomy_terms.id = plant_populations.id)));
+  SQL
+
 end
