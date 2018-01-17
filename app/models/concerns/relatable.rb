@@ -64,7 +64,7 @@ module Relatable extend ActiveSupport::Concern
     end
 
     def self.reverse_relation_key(forward_relation)
-      reverse_relation = self.name.underscore
+      reverse_relation = self.name.split("::").last.underscore
       reverse_relation += forward_relation[-2..-1] if forward_relation.end_with?('_a', '_b')
       "#{reverse_relation}_id"
     end

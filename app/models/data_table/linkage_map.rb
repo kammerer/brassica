@@ -1,9 +1,18 @@
 class DataTable::LinkageMap < DataTable::Base
   self.table_name = "data_table_linkage_maps"
 
-  include Filterable
-  include Pluckable
-  include TableData
+  # NOTES:
+  #
+  # --- 1. visibility of related records - handled by Relatable concern (which relies on associations)
+  # 2. visibility of joined records - todo (possible not handled at all; perhaps submissions does not allow for it)
+  # 3. filtering by foreign key, e.g. plant_populations.id (param handling) - todo (old urls need to work, so param aliasing is needed)
+  # 4. i18n of table headers - todo (simple addition to locales)
+
+  has_many :linkage_groups
+  has_many :map_locus_hits
+
+  include Visible
+  include Relatable
 
   def self.permitted_params
     [
@@ -20,8 +29,8 @@ class DataTable::LinkageMap < DataTable::Base
 
   def self.table_columns
     [
-      'taxonomy_terms.name',
-      'plant_populations.name',
+      'taxonomy_term_name',
+      'plant_population_name',
       'linkage_map_label',
       'linkage_map_name',
       'map_version_no',

@@ -978,6 +978,7 @@ ActiveRecord::Schema.define(version: 20180117183326) do
       SELECT linkage_maps.id,
       linkage_maps.user_id,
       linkage_maps.updated_at,
+      (linkage_maps.published AND plant_populations.published) AS published,
       taxonomy_terms.name AS taxonomy_term_name,
       plant_populations.name AS plant_population_name,
       linkage_maps.linkage_map_label,
