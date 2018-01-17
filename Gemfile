@@ -16,6 +16,7 @@ gem 'coffee-rails', '~> 4.0.0'
 gem 'jquery-rails'
 gem 'therubyracer'
 gem 'quiet_assets'
+gem 'scenic', '~> 1.4'
 
 gem 'dotenv-rails'
 
